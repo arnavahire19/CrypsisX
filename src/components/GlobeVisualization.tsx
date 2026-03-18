@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Globe from 'react-globe.gl'
+import { useMediaQuery } from '../hooks/useMediaQuery'
 
 // High-fidelity locations for attack simulation
 const LOCATIONS = [
@@ -43,11 +44,13 @@ interface LabelData {
 export default function GlobeVisualization() {
   const globeRef = useRef<any>(null!)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const isMobile = useMediaQuery('(max-width: 767px)')
   const [countries, setCountries] = useState({ features: [] })
   const [arcsData, setArcsData] = useState<ArcData[]>([])
   const [labelsData, setLabelsData] = useState<LabelData[]>([])
   const [canvasWidth, setCanvasWidth] = useState(1200)
   const [isHovered, setIsHovered] = useState(false)
+  const globeHeight = isMobile ? 280 : 400
 
   useEffect(() => {
     // High-precision GeoJSON for defined silhouettes
@@ -112,10 +115,11 @@ export default function GlobeVisualization() {
       controls.enableRotate = false
       controls.enableDamping = true
       controls.dampingFactor = 0.05
-      globeRef.current.pointOfView({ lat: 20, lng: 0, altitude: 2.2 })
-      globeRef.current.scene().scale.set(0.8, 0.8, 0.8)
+      globeRef.current.pointOfView({ lat: 20, lng: 0, altitude: isMobile ? 2.35 : 2.2 })
+      const scale = isMobile ? 0.72 : 0.8
+      globeRef.current.scene().scale.set(scale, scale, scale)
     }
-  }, [])
+  }, [isMobile])
 
   useEffect(() => {
     const controls = globeRef.current?.controls?.()
@@ -147,11 +151,12 @@ export default function GlobeVisualization() {
     <div className="w-full">
       <div ref={containerRef} className="mx-auto max-w-[1200px]">
         <div
-          className="relative h-[400px] w-full"
+          className="relative w-full"
+          style={{ height: globeHeight }}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="h-[400px] w-full" style={{ pointerEvents: isHovered ? 'auto' : 'none' }}>
+          <div className="w-full" style={{ height: globeHeight, pointerEvents: isHovered ? 'auto' : 'none' }}>
             <Globe
               ref={globeRef}
               backgroundColor="rgba(0,0,0,0)"
@@ -200,7 +205,7 @@ export default function GlobeVisualization() {
             }}
 
               width={canvasWidth}
-              height={400}
+              height={globeHeight}
             />
           </div>
 
