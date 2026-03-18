@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import Globe from 'react-globe.gl'
-import { motion } from 'framer-motion'
-import { cn } from '../lib/utils'
 
 // High-fidelity locations for attack simulation
 const LOCATIONS = [
@@ -44,9 +42,12 @@ interface LabelData {
 
 export default function GlobeVisualization() {
   const globeRef = useRef<any>(null!)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const [countries, setCountries] = useState({ features: [] })
   const [arcsData, setArcsData] = useState<ArcData[]>([])
   const [labelsData, setLabelsData] = useState<LabelData[]>([])
+  const [canvasWidth, setCanvasWidth] = useState(1200)
+  const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
     // High-precision GeoJSON for defined silhouettes
@@ -103,69 +104,110 @@ export default function GlobeVisualization() {
 
   useEffect(() => {
     if (globeRef.current) {
-      globeRef.current.controls().autoRotate = true
-      globeRef.current.controls().autoRotateSpeed = 0.4
-      globeRef.current.controls().enableZoom = false
-      globeRef.current.controls().enablePan = false
+      const controls = globeRef.current.controls()
+      controls.autoRotate = true
+      controls.autoRotateSpeed = 0.25
+      controls.enableZoom = false
+      controls.enablePan = false
+      controls.enableRotate = false
+      controls.enableDamping = true
+      controls.dampingFactor = 0.05
       globeRef.current.pointOfView({ lat: 20, lng: 0, altitude: 2.2 })
+      globeRef.current.scene().scale.set(0.8, 0.8, 0.8)
     }
   }, [])
 
+  useEffect(() => {
+    const controls = globeRef.current?.controls?.()
+    if (!controls) {
+      return
+    }
+
+    controls.enableRotate = isHovered
+  }, [isHovered])
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const nextWidth = Math.floor(entries[0]?.contentRect.width ?? 1200)
+      if (nextWidth > 0) {
+        setCanvasWidth(nextWidth)
+      }
+    })
+
+    observer.observe(containerRef.current)
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <div className="w-full h-[700px] relative flex items-center justify-center">
-      <Globe
-        ref={globeRef}
-        backgroundColor="rgba(0,0,0,0)"
-        
-        // Continents: Stronger silhouettes
-        polygonsData={countries.features}
-        polygonCapColor={() => 'rgba(255, 255, 255, 0.05)'}
-        polygonSideColor={() => 'rgba(0, 0, 0, 0.2)'}
-        polygonStrokeColor={() => 'rgba(249, 115, 22, 0.15)'}
-        polygonAltitude={0.012}
-        
-        // Atmosphere: High-depth glow
-        atmosphereColor="#f97316"
-        atmosphereAltitude={0.2}
-        
-        // Arcs: Smooth trails
-        arcsData={arcsData}
-        arcColor="color"
-        arcDashLength={0.5}
-        arcDashGap={2}
-        arcDashAnimateTime={1200}
-        arcStroke={0.4}
-        arcAltitudeAutoScale={0.6}
-        
-        // Impact Rings
-        ringsData={labelsData}
-        ringColor={() => '#f97316'}
-        ringMaxRadius={2.5}
-        ringPropagationSpeed={3}
-        ringRepeatPeriod={800}
+    <div className="w-full">
+      <div ref={containerRef} className="mx-auto max-w-[1200px]">
+        <div
+          className="relative h-[400px] w-full"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div className="h-[400px] w-full" style={{ pointerEvents: isHovered ? 'auto' : 'none' }}>
+            <Globe
+              ref={globeRef}
+              backgroundColor="rgba(0,0,0,0)"
 
-        // Floating HUDs: Premium Clarity
-        htmlElementsData={labelsData}
-        htmlElement={(d: any) => {
-          const el = document.createElement('div')
-          el.innerHTML = `
-            <div class="glass-panel px-4 py-2 border-white/20 bg-background-lighter/80 backdrop-blur-xl shadow-[0_0_30px_rgba(249,115,22,0.2)] animate-globe-popup">
-              <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-ember shadow-[0_0_10px_#f97316]"></div>
-                <span class="text-[11px] uppercase tracking-[0.2em] font-black text-white font-sans">${d.text}</span>
-              </div>
-              <div class="text-[8px] uppercase tracking-[0.3em] text-white/40 font-bold mt-1.5 border-t border-white/5 pt-1.5">Action_Executed_Live</div>
-            </div>
-          `
-          return el
-        }}
+            // Continents: Stronger silhouettes
+            polygonsData={countries.features}
+            polygonCapColor={() => 'rgba(255, 255, 255, 0.05)'}
+            polygonSideColor={() => 'rgba(0, 0, 0, 0.2)'}
+            polygonStrokeColor={() => 'rgba(249, 115, 22, 0.15)'}
+            polygonAltitude={0.012}
 
-        width={1200}
-        height={700}
-      />
+            // Atmosphere: High-depth glow
+            atmosphereColor="#f97316"
+            atmosphereAltitude={0.2}
 
-      {/* Atmospheric Fog/Vignette Overlay */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(8,8,8,0.3)_60%,rgba(8,8,8,0.9)_100%)]" />
+            // Arcs: Smooth trails
+            arcsData={arcsData}
+            arcColor="color"
+            arcDashLength={0.5}
+            arcDashGap={2}
+            arcDashAnimateTime={1200}
+            arcStroke={0.4}
+            arcAltitudeAutoScale={0.6}
+
+            // Impact Rings
+            ringsData={labelsData}
+            ringColor={() => '#f97316'}
+            ringMaxRadius={2.5}
+            ringPropagationSpeed={3}
+            ringRepeatPeriod={800}
+
+            // Floating HUDs: Premium Clarity
+            htmlElementsData={labelsData}
+            htmlElement={(d: any) => {
+              const el = document.createElement('div')
+              el.innerHTML = `
+                <div class="glass-panel px-4 py-2 border-white/20 bg-background-lighter/80 backdrop-blur-xl shadow-[0_0_30px_rgba(249,115,22,0.2)] animate-globe-popup">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-ember shadow-[0_0_10px_#f97316]"></div>
+                    <span class="text-[11px] uppercase tracking-[0.2em] font-black text-white font-sans">${d.text}</span>
+                  </div>
+                  <div class="text-[8px] uppercase tracking-[0.3em] text-white/40 font-bold mt-1.5 border-t border-white/5 pt-1.5">Action_Executed_Live</div>
+                </div>
+              `
+              return el
+            }}
+
+              width={canvasWidth}
+              height={400}
+            />
+          </div>
+
+          {/* Soft edge vignette */}
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_48%,rgba(8,8,8,0.18)_72%,rgba(8,8,8,0.48)_100%)]" />
+        </div>
+      </div>
     </div>
   )
 }

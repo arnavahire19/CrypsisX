@@ -16,16 +16,16 @@ export default function SystemTimeline() {
           initial="hidden"
           whileInView="show"
           viewport={revealViewport}
-          className="flex flex-col md:flex-row justify-center items-start gap-10 sm:gap-12 md:gap-24 lg:gap-32 relative"
+          className="relative flex flex-col items-center gap-20"
         >
-          <div className="absolute top-4 left-0 w-full h-[1px] bg-white/[0.05] hidden md:block" />
+          <div className="absolute top-0 left-1/2 h-full w-[2px] -translate-x-1/2 bg-white/[0.08]" />
           
-          {timelineItems.map((item, i) => (
+          {timelineItems.map((item) => (
             <motion.div
               key={item.phase}
               variants={revealUp}
               whileHover={{ y: -4, transition: hoverTransition }}
-              className="relative flex flex-col items-center md:items-start text-center md:text-left z-10 group interactive-card"
+              className="relative z-10 flex flex-col items-center text-center group interactive-card"
             >
               <div className="w-2 h-2 rounded-full bg-white/20 mb-6 group-hover:bg-ember transition-colors duration-500" />
               <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.5em] font-black text-white/20 mb-3 group-hover:text-ember/60 transition-colors duration-500">

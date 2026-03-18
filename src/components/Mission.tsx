@@ -25,7 +25,7 @@ export default function Mission() {
             </motion.h2>
           </motion.div>
 
-          <div ref={globeRef} className="w-full max-w-5xl mx-auto mb-12 sm:mb-16 relative min-h-[320px] sm:min-h-[520px] lg:min-h-[700px]">
+          <div ref={globeRef} className="w-full max-w-[1200px] mx-auto mb-12 sm:mb-16 relative h-[400px]">
             {showGlobe ? <GlobeVisualization /> : null}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background pointer-events-none" />
           </div>
