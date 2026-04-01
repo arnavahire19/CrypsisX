@@ -45,12 +45,13 @@ export default function GlobeVisualization() {
   const globeRef = useRef<any>(null!)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const isMobile = useMediaQuery('(max-width: 767px)')
+  const isTablet = useMediaQuery('(max-width: 1023px)')
   const [countries, setCountries] = useState({ features: [] })
   const [arcsData, setArcsData] = useState<ArcData[]>([])
   const [labelsData, setLabelsData] = useState<LabelData[]>([])
   const [canvasWidth, setCanvasWidth] = useState(1200)
   const [isHovered, setIsHovered] = useState(false)
-  const globeHeight = isMobile ? 280 : 400
+  const globeHeight = isMobile ? 320 : isTablet ? 500 : 700
 
   useEffect(() => {
     // High-precision GeoJSON for defined silhouettes
@@ -115,11 +116,14 @@ export default function GlobeVisualization() {
       controls.enableRotate = false
       controls.enableDamping = true
       controls.dampingFactor = 0.05
-      globeRef.current.pointOfView({ lat: 20, lng: 0, altitude: isMobile ? 2.35 : 2.2 })
-      const scale = isMobile ? 0.72 : 0.8
+      
+      const altitude = isMobile ? 2.35 : isTablet ? 2.2 : 2.0
+      globeRef.current.pointOfView({ lat: 20, lng: 0, altitude })
+      
+      const scale = isMobile ? 0.72 : isTablet ? 0.8 : 0.95
       globeRef.current.scene().scale.set(scale, scale, scale)
     }
-  }, [isMobile])
+  }, [isMobile, isTablet])
 
   useEffect(() => {
     const controls = globeRef.current?.controls?.()
