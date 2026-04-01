@@ -164,8 +164,11 @@ export default function App() {
               </div>
             </div>
             
-            <div className="mt-16 sm:mt-24 lg:mt-32 pt-8 sm:pt-10 border-t border-white/[0.02] flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8">
-              <p className="text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.4em] text-white/10 font-black text-center md:text-left">
+            <div className="mt-16 sm:mt-24 lg:mt-32 pt-8 sm:pt-10 border-t border-white/[0.02] flex flex-col items-center justify-center gap-4 sm:gap-6 pb-12">
+              <p className="text-[12px] tracking-[0.15em] text-white/50 font-medium text-center">
+                ॐ हं हनुमते नमः
+              </p>
+              <p className="text-[9px] uppercase tracking-[0.2em] sm:tracking-[0.4em] text-white/10 font-black text-center">
                 &copy; {new Date().getFullYear()} CrypsisX. Secure by design.
               </p>
             </div>
